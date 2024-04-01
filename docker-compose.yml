@@ -1,0 +1,22 @@
+version: '3.1'
+
+services:
+  app:
+    image: openjdk:11.0.5-jdk
+    container_name: product-comparison-service
+    links:
+      - mongo
+    depends_on:
+      - mongo
+    volumes:
+      - ./build/libs:/app:ro
+      - ./startup-scripts:/startup-scripts:ro
+    ports:
+      - 8080:8080
+      - 11112:11112
+    command: /startup-scripts/start-service.sh
+  mongo:
+    image: mongo
+    ports:
+      - 27027:27017
+    command: --serviceExecutor adaptive

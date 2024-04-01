@@ -1,10 +1,11 @@
-# Ignore Gradle project-specific cache directory
-.gradle
+/target/
+!.mvn/wrapper/maven-wrapper.jar
+/build/
+/.gradle/
+/gradle/wrapper/
 
-# Ignore Gradle build output directory
-build
-.gradle
+### IntelliJ IDEA ###
 .idea
-build
+*.iws
 *.iml
-.gradletasknamecache
+*.ipr

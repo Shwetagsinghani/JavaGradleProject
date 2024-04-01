@@ -1,31 +1,80 @@
+buildscript {
+  ext {
+    springBootVersion = '2.3.4.RELEASE'
+  }
+  repositories {
+    mavenCentral()
+  }
+  dependencies {
+    classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+  }
+}
+
 plugins {
-    id 'groovy'
-    id 'application'
-    id 'com.github.johnrengelman.shadow' version '5.2.0'
+  id "com.palantir.docker" version "0.25.0"
+  id "com.palantir.docker-run" version "0.25.0"
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'com.palantir.docker'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+group 'com.alexnevsky'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = JavaVersion.VERSION_11
+
+idea {
+  module {
+    downloadJavadoc = true
+    downloadSources = true
+  }
 }
 
 repositories {
-    jcenter()
-    flatDir {
-        dirs 'lib'
-    }
+  mavenCentral()
 }
-
-archivesBaseName = 'gradle-example'
 
 dependencies {
-    implementation 'org.codehaus.groovy:groovy:3.+'
+  implementation 'org.springframework.boot:spring-boot-starter-web'
+  implementation 'org.springframework.boot:spring-boot-starter-actuator'
+  implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 
-    // Groovy module dependency
-    implementation 'org.codehaus.groovy:groovy-json:3.+'
+  testCompile 'org.springframework.boot:spring-boot-starter-test'
 
-    // Strictly exact version of Maven dependency
-    implementation 'com.codevineyard:hello-world:1.0.1!!'
+  compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
 
-    // Dependency from local jar
-    implementation ':simple-jar'
+  compile group: 'com.google.code.gson', name: 'gson', version: '2.8.6'
+  compile group: 'com.google.guava', name: 'guava', version: '28.2-jre'
+
+  implementation 'org.mapstruct:mapstruct:1.4.1.Final'
+  annotationProcessor 'org.mapstruct:mapstruct-processor:1.4.1.Final'
+
+  compileOnly 'org.projectlombok:lombok:1.18.12'
+  annotationProcessor 'org.projectlombok:lombok:1.18.12'
+  testCompileOnly 'org.projectlombok:lombok:1.18.12'
+  testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
+
+  implementation "io.springfox:springfox-boot-starter:3.0.0"
+  compile 'io.springfox:springfox-swagger-ui:3.0.0'
 }
 
-application {
-    mainClassName = 'com.adjectivecolournoun.gradle.Greetz'
+test {
+  useJUnitPlatform()
+}
+
+docker {
+  dependsOn build as Task
+  name "${project.name}"
+  files bootJar.archiveFile
+  buildArgs(['JAR_FILE': "${bootJar.archiveFileName}"])
+}
+
+dockerRun {
+  name "${project.name}"
+  image "${project.name}:${project.version}"
+  ports '8080:8080'
+  clean true
 }
